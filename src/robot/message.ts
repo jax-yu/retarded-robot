@@ -41,15 +41,18 @@ const handleRoomMsg = async (room: Room, message: Message) => {
 }
 
 const sayJob = async (city: string, message: Message) => {
-  await message.say(`${city}工作查询中...`)
-  const res = await db.queryJobByCity(city)
-  console.log(res)
-  if (res.length) {
-    res.map((item, index) => {
-      message.say(`${index + 1}: ${item.job_content}`)
-    })
-  } else {
-    await message.say(`${city}暂无工作记录，请联系管理员`)
+  try {
+    await message.say(`${city}工作查询中...`)
+    const res = await db.queryJobByCity(city)
+    if (res.length) {
+      res.map((item, index) => {
+        message.say(`${index + 1}: ${item.job_content}`)
+      })
+    } else {
+      await message.say(`${city}暂无工作记录，请联系管理员`)
+    }
+  } catch (e) {
+    await message.say(`${city}工作查询失败，请晚点再查`)
   }
 }
 
