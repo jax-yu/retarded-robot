@@ -45,8 +45,8 @@ const sayJob = async (city: string, message: Message) => {
   const res = await db.queryJobByCity(city)
   console.log(res)
   if (res.length) {
-    res.map(item => {
-      message.say(item.job_content)
+    res.map((item, index) => {
+      message.say(`${index + 1}: ${item.job_content}`)
     })
   } else {
     await message.say(`${city}暂无工作记录，请联系管理员`)

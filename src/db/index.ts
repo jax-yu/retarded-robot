@@ -3,7 +3,7 @@ const mysql = require('mysql')
 
 export let connection: any
 
-export interface JobInfoType {
+interface JobInfoType {
   id: string;
   city: string;
   'job_content': string;
@@ -17,16 +17,19 @@ export const db = {
     connection = mysql.createConnection(dbConfig)
     connection.connect((err: any) => {
       if (err) {
-        console.log('连接失败')
+        console.log('sql connection failure')
       } else {
-        console.log('连接成功')
+        console.log('sql connection successful')
       }
     })
   },
   async queryJobByCity (city: string): Promise<JobInfoType[]> {
+    const sql = `SELECT * FROM job_info WHERE city = '${city}'`
+    return this.sqlQuery<JobInfoType[]>(sql)
+  },
+  async sqlQuery<T> (...sql: string[]): Promise<T> {
     return new Promise((resolve, reject) => {
-      const sql = `SELECT * FROM job_info WHERE city = '${city}'`
-      connection.query(sql, (err: any, result: any) => {
+      connection.query(...sql, (err: any, result: any) => {
         if (err) {
           reject(new Error(err))
         }
