@@ -5,9 +5,7 @@ import onScan from './scan'
 import { onLogin, onLogout } from './loginStatus'
 import onMessage from './message'
 
-console.log(robotConfig)
-
-const robot = new Wechaty({
+export const robot = new Wechaty({
   puppet: new PuppetPadplus({
     token: robotConfig.token
   }),

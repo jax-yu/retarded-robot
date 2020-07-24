@@ -1,6 +1,33 @@
 // eslint-disable-next-line no-unused-vars
-import { log, Message, Room } from 'wechaty'
-import { db } from '../db'
+import { Contact, log, Message, Room } from 'wechaty'
+import { fetchJobInfo } from './features/job'
+import { sendAllByGroup } from './features/sendAll'
+
+// 处理群消息艾特机器人时的功能
+const dispatchRoomAtRobotFeat = async (content: string, message: Message, room: Room | null) => {
+  if (content === '功能列表') {
+    await room?.say(`@${message.from()?.name()}
+    以下功能，仅为@我触发\n
+    地名+工作信息
+    `)
+    return
+  }
+  if (content.match('工作信息')) {
+    await fetchJobInfo(content.substring(0, content.length - 4), message)
+  }
+}
+
+const dispatchFriend = async (content: string, message: Message) => {
+  // const data = await robot.Room.findAll()
+  // console.log(data.map(item => {
+  //   return item.id
+  // }))
+  // const data = await robot.Contact.findAll()
+  // console.log(data)
+  if (content.match('群发')) {
+    await sendAllByGroup(content, message)
+  }
+}
 
 /**
  * 处理群消息
@@ -17,7 +44,7 @@ const handleRoomMsg = async (room: Room, message: Message) => {
         const content = message.text().replace(/@[^,，：:\s@]+/g, '').trim()
         // 处理艾特机器人的文本
         log.info(content)
-        await sayJob(content, message)
+        await dispatchRoomAtRobotFeat(content, message, message?.room())
       }
       break
     case Message.Type.Emoticon:
@@ -40,26 +67,43 @@ const handleRoomMsg = async (room: Room, message: Message) => {
   }
 }
 
-const sayJob = async (city: string, message: Message) => {
-  try {
-    await message.say(`${city}工作查询中...`)
-    const res = await db.queryJobByCity(city)
-    if (res.length) {
-      res.map((item, index) => {
-        message.say(`${index + 1}: ${item.job_content}`)
-      })
-    } else {
-      await message.say(`${city}暂无工作记录，请联系管理员`)
-    }
-  } catch (e) {
-    await message.say(`${city}工作查询失败，请晚点再查`)
-  }
-}
-
 /**
  * 好友私聊
  */
-const handleFriend = async () => {
+const handleFriend = async (message: Message) => {
+  const type = message.type()
+  const contact = message.from() // 发消息人
+  const isOfficial = contact?.type() === Contact.Type.Official
+  const content = message.text()
+  switch (type) {
+    case Message.Type.Text:
+      if (!isOfficial) {
+        console.log(`发消息人${await contact?.name()}:${content}`)
+        if (content.trim()) {
+          await dispatchFriend(content, message)
+        }
+      } else {
+        console.log('公众号消息')
+      }
+      break
+    case Message.Type.Emoticon:
+      console.log(`发消息人${await contact?.name()}:发了一个表情`)
+      break
+    case Message.Type.Image:
+      console.log(`发消息人${await contact?.name()}:发了一张图片`)
+      break
+    case Message.Type.Url:
+      console.log(`发消息人${await contact?.name()}:发了一个链接`)
+      break
+    case Message.Type.Video:
+      console.log(`发消息人${await contact?.name()}:发了一个视频`)
+      break
+    case Message.Type.Audio:
+      console.log(`发消息人${await contact?.name()}:发了一个视频`)
+      break
+    default:
+      break
+  }
 }
 
 export default async function (message: Message) {
@@ -69,6 +113,6 @@ export default async function (message: Message) {
   if (room) {
     await handleRoomMsg(room, message)
   } else {
-    await handleFriend()
+    await handleFriend(message)
   }
 }
