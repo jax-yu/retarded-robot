@@ -1,18 +1,17 @@
+import emailConfig from '../../config/email'
+
 const imaps = require('imap-simple')
 const simpleParser = require('mailparser').simpleParser
 
 const config = {
-  imap: {
-    user: 'xxxxxx@qq.com',
-    password: 'password',
-    host: 'imap.qq.com',
-    port: 993,
-    tls: true,
-    authTimeout: 3000,
-    tlsOptions: {
-      servername: 'imap.qq.com'
-    }
-  }
+  imap: emailConfig
+}
+
+export interface EmailUserInfo {
+  name?: string;
+  age?: number;
+  sex?: string;
+  phone?: number;
 }
 
 interface EmailBodyType {
@@ -68,17 +67,17 @@ interface EmailConnectionType {
   deleteMessage(uid: number): void;
 }
 
-const fetchEmail = () => {
+const fetchEmail = (): Promise<EmailUserInfo> => {
   return new Promise((resolve, reject) => {
     try {
       imaps.connect(config).then(function (connection: EmailConnectionType) {
-        return connection.openBox('INBOX').then(function () {
+        connection.openBox('INBOX').then(function () {
           // Fetch new email
           const searchCriteria = ['NEW']
           const fetchOptions = {
             bodies: ['']
           }
-          return connection.search(searchCriteria, fetchOptions).then(function (results: EmailWrapType[]) {
+          connection.search(searchCriteria, fetchOptions).then(function (results: EmailWrapType[]) {
             results.forEach(async (item) => {
               // const all = item.parts.find((mItem): boolean => mItem.which === 'TEXT')
               const parsed = await simpleParser(item.parts[0].body)
@@ -86,9 +85,9 @@ const fetchEmail = () => {
               connection.deleteMessage(item.attributes.uid)
               resolve({
                 name: nameRegExp.substr(0, nameRegExp.length - 1),
-                age: parsed.text.match(/（(.+)）/g, '')[1].substr(3, 2),
+                age: Number(parsed.text.match(/（(.+)）/g, '')[1].substr(3, 2)),
                 sex: parsed.text.match(/（(.+)）/g, '')[1].substr(1, 1),
-                phone: parsed.text.replace(/[^0-9]/ig, '').substr(10, 11)
+                phone: Number(parsed.text.replace(/[^0-9]/ig, '').substr(13, 11))
               })
             })
           })
@@ -100,4 +99,4 @@ const fetchEmail = () => {
   })
 }
 
-fetchEmail()
+export default fetchEmail
