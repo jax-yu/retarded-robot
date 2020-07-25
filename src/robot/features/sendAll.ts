@@ -5,7 +5,7 @@ import { robot } from '../index'
 // eslint-disable-next-line no-unused-vars
 import { EmailUserInfo } from '../../utils/email'
 import { getStringValue, setStringValue } from '../../utils/redisHelper'
-import {delay, delayValue} from "../../utils/delay";
+import { delay, delayValue } from '../../utils/delay'
 const fs = require('fs')
 
 const SEND_MSG_KEY = 'SEND_MSG_KEY'
@@ -25,8 +25,7 @@ const handleSend = async () => {
   if (sendMsg !== '') {
     if (robotConfig.runConfig.groupSendMode) {
       await robotConfig.runConfig.groupList.map(async item => {
-        const room = await robot.Room.find({ id: item })
-        room?.say(sendMsg)
+        await sendGroupMsg(sendMsg, item)
       })
     } else {
       const groupList = await robot.Room.findAll()
@@ -34,10 +33,7 @@ const handleSend = async () => {
         return robotConfig.runConfig.groupList.findIndex(mItem => mItem === item) === -1
       })
       sendList.map(async item => {
-        const room = await robot.Room.find({ id: item })
-        await room?.sync()
-        room?.say(sendMsg)
-        await delay(delayValue.sendRoomMsg)
+        await sendGroupMsg(sendMsg, item)
       })
     }
     await sendAdmin('群发完成', robotConfig.runConfig.admin[0])
@@ -47,6 +43,13 @@ const handleSend = async () => {
   setTimeout(() => {
     handleSend()
   }, 1000 * 60 * 60) // 一小时发送一次
+}
+
+const sendGroupMsg = async (msg: string, groupId: string) => {
+  const room = await robot.Room.find({ id: groupId })
+  await room?.sync()
+  room?.say(msg)
+  await delay(delayValue.sendRoomMsg)
 }
 
 export const sendEmailInfoToAdmin = async (userInfo: EmailUserInfo) => {
