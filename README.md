@@ -23,7 +23,7 @@ This is not a very smart wechat robot
 ## 功能列表
 - [x] 工作信息查询
 - [x] 定时群发
-- [X] 58同城邮件解析
+- [X] 58同城邮件解析(解析成功后，会通知到管理员)
 - [ ] 智能对话
 - [ ] 颜值检测
 
@@ -41,6 +41,8 @@ git clone https://github.com/xajeyu/retarded-robot.git
 ## 使用说明
 * 该机器人基于pad协议，请在config/robot.ts中配置自己的[token](https://github.com/juzibot/Welcome/wiki/Everything-about-Wechaty)
 * 所有涉及到配置的文本全在config文件夹中
+* 定时发送消息存储在redis中
+* 工作信息存在数据库中
 ```shell script
 npm install or yarn
 npm start or yarn start
