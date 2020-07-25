@@ -22,9 +22,11 @@ const dispatchFriend = async (content: string, message: Message) => {
   // }))
   // const data = await robot.Contact.findAll()
   // console.log(data)
-  if (content.match('群发')) {
+  if (content.substr(0, 2) === '群发') {
     await sendAllByGroup(content, message)
+    return
   }
+  await message.say(content)
 }
 
 // msg type handle
@@ -110,6 +112,7 @@ export default async function (message: Message) {
   const msgSelf = message.self()
   if (msgSelf) return
   if (room) {
+    await room.sync()
     await handleRoomMsg(room, message)
   } else {
     await handleFriendMsg(message)

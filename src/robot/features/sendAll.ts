@@ -21,18 +21,23 @@ export const sendAllByGroup = async (msg: string, message: Message) => {
 const handleSend = async () => {
   const sendMsg = await getStringValue(SEND_MSG_KEY)
   if (sendMsg !== '') {
-    if (robotConfig.runConfig.sendAllGroup.length > 0) {
-      await robotConfig.runConfig.sendAllGroup.map(async item => {
+    if (robotConfig.runConfig.groupSendMode) {
+      await robotConfig.runConfig.groupList.map(async item => {
         const room = await robot.Room.find({ id: item })
         room?.say(sendMsg)
       })
     } else {
       const groupList = await robot.Room.findAll()
-      groupList.map(async item => {
-        const room = await robot.Room.find({ id: item.id })
+      const sendList = groupList.map(item => item.id).filter((item) => {
+        return robotConfig.runConfig.groupList.findIndex(mItem => mItem === item) === -1
+      })
+      sendList.map(async item => {
+        const room = await robot.Room.find({ id: item })
+        await room?.sync()
         room?.say(sendMsg)
       })
     }
+    await sendAdmin('群发完成', robotConfig.runConfig.admin[0])
   } else {
     await sendAdmin('群发内容为空', robotConfig.runConfig.admin[0])
   }
