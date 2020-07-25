@@ -13,6 +13,7 @@ This is not a very smart wechat robot
 - [安装](#安装)
 - [使用说明](#使用说明)
 - [示例](#示例)
+- [部署](#部署)
 - [维护者](#维护者)
 - [使用许可](#使用许可)
 
@@ -50,6 +51,17 @@ npm start or yarn start
 
 ## 示例
 [主要入口](src/robot/)
+
+## 部署
+```shell script
+npm install -g pm2
+pm2 start run-ts.sh
+# 运行成功后 执行
+pm2 logs # 等待二维码之后扫描即可
+# 停止应用 id 为 pm2 start run-ts.sh 启动后出现的应用ID
+pm2 delete all or pm2 delete id
+# 相关具体使用请自行搜索pm2教程
+```
 
 ## 维护者
 [@xajeyu](https://github.com/xajeyu)
