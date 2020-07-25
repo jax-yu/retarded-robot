@@ -2,14 +2,12 @@
 import { Contact, log, Message, Room } from 'wechaty'
 import { fetchJobInfo } from './features/job'
 import { sendAllByGroup } from './features/sendAll'
+import { roomMenu } from './features/featureMenu'
 
 // 处理群消息艾特机器人时的功能
 const dispatchRoomAtRobotFeat = async (content: string, message: Message, room: Room | null) => {
   if (content === '功能列表') {
-    await room?.say(`@${message.from()?.name()}
-    以下功能，仅为@我触发\n
-    地名+工作信息
-    `)
+    await roomMenu(content, message, room)
     return
   }
   if (content.match('工作信息')) {
@@ -29,54 +27,23 @@ const dispatchFriend = async (content: string, message: Message) => {
   }
 }
 
-/**
- * 处理群消息
- */
-const handleRoomMsg = async (room: Room, message: Message) => {
-  const contact = message.from() // 发消息人
-  const roomName = await room.topic()
-  const type = message.type()
-  const isAtRobot = await message.mentionSelf()
-  switch (type) {
-    case Message.Type.Text:
-      console.log(`群名: ${roomName} 发消息人: ${contact?.name()} 内容: ${message.text()}`)
-      if (isAtRobot) {
+// msg type handle
+const msgTypeHandle = [
+  {
+    type: Message.Type.Text,
+    roomMsgHandle: async (room: Room, message: Message) => {
+      console.log(`群名: ${await room.topic()} 发消息人: ${message.from()?.name()} 内容: ${message.text()}`)
+      if (await message.mentionSelf()) {
         const content = message.text().replace(/@[^,，：:\s@]+/g, '').trim()
         // 处理艾特机器人的文本
         log.info(content)
         await dispatchRoomAtRobotFeat(content, message, message?.room())
       }
-      break
-    case Message.Type.Emoticon:
-      console.log(`群名: ${roomName} 发消息人: ${contact?.name()} 发了一个表情`)
-      break
-    case Message.Type.Image:
-      console.log(`群名: ${roomName} 发消息人: ${contact?.name()} 发了一张图片`)
-      break
-    case Message.Type.Url:
-      console.log(`群名: ${roomName} 发消息人: ${contact?.name()} 发了一个链接`)
-      break
-    case Message.Type.Video:
-      console.log(`群名: ${roomName} 发消息人: ${contact?.name()} 发了一个视频`)
-      break
-    case Message.Type.Audio:
-      console.log(`群名: ${roomName} 发消息人: ${contact?.name()} 发了一个语音`)
-      break
-    default:
-      break
-  }
-}
-
-/**
- * 好友私聊
- */
-const handleFriend = async (message: Message) => {
-  const type = message.type()
-  const contact = message.from() // 发消息人
-  const isOfficial = contact?.type() === Contact.Type.Official
-  const content = message.text()
-  switch (type) {
-    case Message.Type.Text:
+    },
+    friendMsgHandle: async (message: Message) => {
+      const contact = message.from() // 发消息人
+      const isOfficial = contact?.type() === Contact.Type.Official
+      const content = message.text()
       if (!isOfficial) {
         console.log(`发消息人${await contact?.name()}:${content}`)
         if (content.trim()) {
@@ -85,25 +52,57 @@ const handleFriend = async (message: Message) => {
       } else {
         console.log('公众号消息')
       }
-      break
-    case Message.Type.Emoticon:
-      console.log(`发消息人${await contact?.name()}:发了一个表情`)
-      break
-    case Message.Type.Image:
-      console.log(`发消息人${await contact?.name()}:发了一张图片`)
-      break
-    case Message.Type.Url:
-      console.log(`发消息人${await contact?.name()}:发了一个链接`)
-      break
-    case Message.Type.Video:
-      console.log(`发消息人${await contact?.name()}:发了一个视频`)
-      break
-    case Message.Type.Audio:
-      console.log(`发消息人${await contact?.name()}:发了一个视频`)
-      break
-    default:
-      break
+    }
+  },
+  {
+    type: Message.Type.Emoticon,
+    roomMsgHandle: async (room: Room, message: Message) => {
+    },
+    friendMsgHandle: async (message: Message) => {
+    }
+  },
+  {
+    type: Message.Type.Image,
+    roomMsgHandle: async (room: Room, message: Message) => {
+    },
+    friendMsgHandle: async (message: Message) => {
+    }
+  },
+  {
+    type: Message.Type.Url,
+    roomMsgHandle: async (room: Room, message: Message) => {
+    },
+    friendMsgHandle: async (message: Message) => {
+    }
+  },
+  {
+    type: Message.Type.Video,
+    roomMsgHandle: async (room: Room, message: Message) => {
+    },
+    friendMsgHandle: async (message: Message) => {
+    }
+  },
+  {
+    type: Message.Type.Audio,
+    roomMsgHandle: async (room: Room, message: Message) => {
+    },
+    friendMsgHandle: async (message: Message) => {
+    }
   }
+]
+
+/**
+ * 处理群消息
+ */
+const handleRoomMsg = async (room: Room, message: Message) => {
+  msgTypeHandle.find(item => item.type === message.type())?.roomMsgHandle(room, message)
+}
+
+/**
+ * 好友私聊
+ */
+const handleFriendMsg = async (message: Message) => {
+  msgTypeHandle.find(item => item.type === message.type())?.friendMsgHandle(message)
 }
 
 export default async function (message: Message) {
@@ -113,6 +112,6 @@ export default async function (message: Message) {
   if (room) {
     await handleRoomMsg(room, message)
   } else {
-    await handleFriend(message)
+    await handleFriendMsg(message)
   }
 }
