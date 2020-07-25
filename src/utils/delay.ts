@@ -5,6 +5,6 @@ export const delayValue = {
 
 export const delay = async (time: number) => {
   return new Promise((resolve, reject) => {
-    resolve(setTimeout(() => {}, time))
+    setTimeout(resolve, time)
   })
 }
