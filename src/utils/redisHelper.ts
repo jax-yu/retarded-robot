@@ -6,12 +6,12 @@ const client = redis.createClient(redisConfig.port, redisConfig.host, {
 })
 
 client.on('ready', (res: any) => {
-  console.log('ready')
+  console.log('redis ready')
 })
 
 client.on('end', (err: any) => {
   console.log(err)
-  console.log('end')
+  console.log('redis end')
 })
 
 client.on('error', (err: any) => {

@@ -1,10 +1,12 @@
 // eslint-disable-next-line no-unused-vars
-import { Message } from 'wechaty'
+import { log, Message } from 'wechaty'
 import robotConfig from '../../../config/robot'
 import { robot } from '../index'
 // eslint-disable-next-line no-unused-vars
 import { EmailUserInfo } from '../../utils/email'
 import { getStringValue, setStringValue } from '../../utils/redisHelper'
+import {delay, delayValue} from "../../utils/delay";
+const fs = require('fs')
 
 const SEND_MSG_KEY = 'SEND_MSG_KEY'
 
@@ -35,6 +37,7 @@ const handleSend = async () => {
         const room = await robot.Room.find({ id: item })
         await room?.sync()
         room?.say(sendMsg)
+        await delay(delayValue.sendRoomMsg)
       })
     }
     await sendAdmin('群发完成', robotConfig.runConfig.admin[0])
@@ -57,4 +60,20 @@ export const sendEmailInfoToAdmin = async (userInfo: EmailUserInfo) => {
 export const sendAdmin = async (msg: string, adminAlias: string) => {
   const contact = await robot.Contact.find({ alias: adminAlias })
   contact?.say(msg)
+}
+
+export const loadGroupList = async (isWriteFile: boolean = false) => {
+  const list = await robot.Room.findAll()
+  const data: any[] = []
+  await list.map(async item => {
+    data.push({
+      id: item.id,
+      topic: await item.topic()
+    })
+  })
+  if (isWriteFile) {
+    fs.writeFile('./group.txt', JSON.stringify(data), () => {
+    })
+  }
+  return data
 }
