@@ -54,7 +54,9 @@ const dispatchFriend = async (content: string, message: Message) => {
       const groupList = await getGroupList()
       const groupListMsg: any[] = []
       for await (const item of groupList) {
-        const room = await robot.Room.find({ id: item })
+        // const room = await robot.Room.find({ id: item })
+        const room = robot.Room.load(item)
+        await room.sync()
         const roomName = await room?.topic()
         groupListMsg.push(roomName)
       }
