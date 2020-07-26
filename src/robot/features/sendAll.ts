@@ -1,10 +1,15 @@
 // eslint-disable-next-line no-unused-vars
 import { log, Message } from 'wechaty'
-import robotConfig from '../../../config/robot'
 import { robot } from '../index'
 // eslint-disable-next-line no-unused-vars
 import { EmailUserInfo } from '../../utils/email'
-import { getStringValue, setStringValue } from '../../utils/redisHelper'
+import {
+  getGroupExcludeStatus,
+  getGroupList,
+  getRobotAdmin,
+  getStringValue,
+  setStringValue
+} from '../../utils/redisHelper'
 import { delay, delayValue } from '../../utils/delay'
 const fs = require('fs')
 
@@ -22,23 +27,27 @@ export const sendAllByGroup = async (msg: string, message: Message) => {
 
 const handleSend = async () => {
   const sendMsg = await getStringValue(SEND_MSG_KEY)
+  const admin = await getRobotAdmin()
   if (sendMsg !== '') {
-    if (robotConfig.runConfig.groupSendMode) {
-      await robotConfig.runConfig.groupList.map(async item => {
-        await sendGroupMsg(sendMsg, item)
-      })
-    } else {
+    if (await getGroupExcludeStatus()) {
+      const excludeGroupList = await getGroupList()
       const groupList = await robot.Room.findAll()
       const sendList = groupList.map(item => item.id).filter((item) => {
-        return robotConfig.runConfig.groupList.findIndex(mItem => mItem === item) === -1
+        return excludeGroupList.findIndex(mItem => mItem === item) === -1
       })
       sendList.map(async item => {
         await sendGroupMsg(sendMsg, item)
       })
+    } else {
+      const groupList = await robot.Room.findAll()
+      groupList.map(async item => {
+        await sendGroupMsg(sendMsg, item.id)
+      })
     }
-    await sendAdmin('群发完成', robotConfig.runConfig.admin[0])
+    await sendAdmin('群发完成', admin.length > 0 ? admin[0] : '')
   } else {
-    await sendAdmin('群发内容为空', robotConfig.runConfig.admin[0])
+    await sendAdmin(`定时群发通知:
+    群发内容为空`, admin.length > 0 ? admin[0] : '')
   }
   setTimeout(() => {
     handleSend()
@@ -53,27 +62,28 @@ const sendGroupMsg = async (msg: string, groupId: string) => {
 }
 
 export const sendEmailInfoToAdmin = async (userInfo: EmailUserInfo) => {
+  const admin = await getRobotAdmin()
   await sendAdmin(`🆕58简历自动筛选:
 姓名: ${userInfo.name}
 性别: ${userInfo.sex}
 年龄: ${userInfo.age}
-手机: ${userInfo.phone}`, robotConfig.runConfig.admin[0])
+手机: ${userInfo.phone}`, admin.length > 0 ? admin[0] : '')
 }
 
 export const sendAdmin = async (msg: string, adminAlias: string) => {
-  const contact = await robot.Contact.find({ alias: adminAlias })
+  const contact = await robot.Contact.find({ id: adminAlias })
   contact?.say(msg)
 }
 
 export const loadGroupList = async (isWriteFile: boolean = false) => {
   const list = await robot.Room.findAll()
   const data: any[] = []
-  await list.map(async item => {
+  for await (const item of list) {
     data.push({
       id: item.id,
       topic: await item.topic()
     })
-  })
+  }
   if (isWriteFile) {
     fs.writeFile('./group.txt', JSON.stringify(data), () => {
     })
