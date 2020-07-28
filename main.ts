@@ -1,2 +1,2 @@
-require('./src/robot/index.ts')
-require('./src/utils/redisHelper')
+import './src/robot/index'
+import './src/utils/redisHelper'

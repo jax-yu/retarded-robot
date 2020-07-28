@@ -14,6 +14,7 @@ import { delay, delayValue } from '../../utils/delay'
 const fs = require('fs')
 
 const SEND_MSG_KEY = 'SEND_MSG_KEY'
+let nextHandleSend: NodeJS.Timeout | null = null
 
 export const sendAllByGroup = async (msg: string, message: Message) => {
   try {
@@ -23,6 +24,15 @@ export const sendAllByGroup = async (msg: string, message: Message) => {
   } catch (e) {
     await message.say('群发存储失败，请联系开发人员！')
   }
+}
+
+export const clearNextHandleSend = () :string => {
+  if (nextHandleSend !== null) {
+    clearTimeout(nextHandleSend)
+    nextHandleSend = null
+    return '停止群发成功'
+  }
+  return '未设置群发'
 }
 
 const handleSend = async () => {
@@ -49,7 +59,7 @@ const handleSend = async () => {
     await sendAdmin(`定时群发通知:
     群发内容为空`, admin.length > 0 ? admin[0] : '')
   }
-  setTimeout(() => {
+  nextHandleSend = setTimeout(() => {
     handleSend()
   }, 1000 * 60 * 60) // 一小时发送一次
 }

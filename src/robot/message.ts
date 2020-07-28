@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 import { Contact, log, Message, Room } from 'wechaty'
 import { fetchJobInfo } from './features/job'
-import { sendAllByGroup } from './features/sendAll'
+import { clearNextHandleSend, sendAllByGroup } from './features/sendAll'
 import { privateMenu, roomMenu } from './features/featureMenu'
 import {
   getGroupExcludeStatus,
@@ -53,6 +53,7 @@ const dispatchFriend = async (content: string, message: Message) => {
     if (content === '查看特殊群') {
       const groupList = await getGroupList()
       const groupListMsg: any[] = []
+      await message.say('特殊群查询中...')
       for await (const item of groupList) {
         // const room = await robot.Room.find({ id: item })
         const room = robot.Room.load(item)
@@ -73,6 +74,10 @@ ${groupListMsg.join('\n')}`)
       const status = content.substr(8, content.length)
       await setGroupExcludeStatus(status === '是' ? '1' : '0')
       await message.say('群发状态设置成功')
+      return
+    }
+    if (content === '停止群发') {
+      await message.say(clearNextHandleSend())
       return
     }
     // await message.say(content)

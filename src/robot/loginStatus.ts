@@ -1,11 +1,15 @@
 // eslint-disable-next-line no-unused-vars
 import { ContactSelf } from 'wechaty/dist/src/user'
 import { db } from '../db'
+import { getRobotAdmin } from '../utils/redisHelper'
+import { sendAdmin } from './features/sendAll'
 // import fetchEmail from '../utils/email'
 // import { sendEmailInfoToAdmin } from './features/sendAll'
 
-export function onLogin (user: ContactSelf) {
+export async function onLogin (user: ContactSelf) {
   db.open()
+  const admin = await getRobotAdmin()
+  await sendAdmin(`登录成功${user.name()}`, admin[0])
   console.log(`登录成功${user.name()}`)
   // setInterval(async () => {
   //   try {
