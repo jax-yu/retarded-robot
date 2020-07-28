@@ -14,6 +14,7 @@ import { delay, delayValue } from '../../utils/delay'
 const fs = require('fs')
 
 const SEND_MSG_KEY = 'SEND_MSG_KEY'
+const SEND_INTERVAL_TIME = 'SEND_INTERVAL_TIME'
 let nextHandleSend: NodeJS.Timeout | null = null
 
 export const sendAllByGroup = async (msg: string, message: Message) => {
@@ -37,6 +38,7 @@ export const clearNextHandleSend = () :string => {
 
 const handleSend = async () => {
   const sendMsg = await getStringValue(SEND_MSG_KEY)
+  const intervalTime = await getStringValue(SEND_INTERVAL_TIME)
   const admin = await getRobotAdmin()
   if (sendMsg !== '') {
     if (await getGroupExcludeStatus()) {
@@ -61,7 +63,16 @@ const handleSend = async () => {
   }
   nextHandleSend = setTimeout(() => {
     handleSend()
-  }, 1000 * 60 * 60) // 一小时发送一次
+  }, Number(intervalTime)) // 一小时发送一次
+}
+
+export const queryIntervalTime = async (): Promise<number> => {
+  const intervalTime = await getStringValue(SEND_INTERVAL_TIME)
+  return Number(intervalTime) / 1000
+}
+
+export const setIntervalTime = async (intervalTime: number) => {
+  await setStringValue(SEND_INTERVAL_TIME, `${intervalTime * 1000}`)
 }
 
 const sendGroupMsg = async (msg: string, groupId: string) => {

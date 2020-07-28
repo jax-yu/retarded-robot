@@ -1,7 +1,7 @@
 // eslint-disable-next-line no-unused-vars
 import { Contact, log, Message, Room } from 'wechaty'
 import { fetchJobInfo } from './features/job'
-import { clearNextHandleSend, sendAllByGroup } from './features/sendAll'
+import { clearNextHandleSend, queryIntervalTime, sendAllByGroup, setIntervalTime } from './features/sendAll'
 import { privateMenu, roomMenu } from './features/featureMenu'
 import {
   getGroupExcludeStatus,
@@ -78,6 +78,17 @@ ${groupListMsg.join('\n')}`)
     }
     if (content === '停止群发') {
       await message.say(clearNextHandleSend())
+      return
+    }
+    if (content.substr(0, 6) === '设置群发间隔') {
+      const time = Number(content.substr(8, content.length))
+      await setIntervalTime(time)
+      await message.say(`间隔(${time}秒)设置成功!`)
+      return
+    }
+    if (content === '查看群发间隔') {
+      const time = await queryIntervalTime()
+      await message.say(`当前间隔: ${time}秒`)
       return
     }
     // await message.say(content)
