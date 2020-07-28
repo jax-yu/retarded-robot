@@ -73,6 +73,8 @@ export const queryIntervalTime = async (): Promise<number> => {
 
 export const setIntervalTime = async (intervalTime: number) => {
   await setStringValue(SEND_INTERVAL_TIME, `${intervalTime * 1000}`)
+  await clearNextHandleSend()
+  await handleSend()
 }
 
 const sendGroupMsg = async (msg: string, groupId: string) => {

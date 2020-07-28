@@ -81,7 +81,7 @@ ${groupListMsg.join('\n')}`)
       return
     }
     if (content.substr(0, 6) === '设置群发间隔') {
-      const time = Number(content.substr(8, content.length))
+      const time = Number(content.substr(6, content.length))
       await setIntervalTime(time)
       await message.say(`间隔(${time}秒)设置成功!`)
       return
