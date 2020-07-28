@@ -70,8 +70,8 @@ export const sendEmailInfoToAdmin = async (userInfo: EmailUserInfo) => {
 手机: ${userInfo.phone}`, admin.length > 0 ? admin[0] : '')
 }
 
-export const sendAdmin = async (msg: string, adminAlias: string) => {
-  const contact = await robot.Contact.find({ id: adminAlias })
+export const sendAdmin = async (msg: string, adminId: string) => {
+  const contact = await robot.Contact.find({ weixin: adminId })
   contact?.say(msg)
 }
 
