@@ -20,7 +20,8 @@ let nextHandleSend: NodeJS.Timeout | null = null
 export const sendAllByGroup = async (msg: string, message: Message) => {
   try {
     await setStringValue(SEND_MSG_KEY, msg.substring(2, msg.length))
-    await message.say('已存储, 此次已发送, 一小时后自动发送')
+    const intervalTime = await getStringValue(SEND_INTERVAL_TIME)
+    await message.say(`已存储, 此次已发送, ${intervalTime}秒后自动发送`)
     await handleSend()
   } catch (e) {
     await message.say('群发存储失败，请联系开发人员！')
@@ -61,6 +62,7 @@ const handleSend = async () => {
     await sendAdmin(`定时群发通知:
     群发内容为空`, admin.length > 0 ? admin[0] : '')
   }
+  await clearNextHandleSend()
   nextHandleSend = setTimeout(() => {
     handleSend()
   }, Number(intervalTime)) // 一小时发送一次
