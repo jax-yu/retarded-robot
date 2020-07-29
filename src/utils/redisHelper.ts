@@ -56,6 +56,9 @@ export const getGroupList = async () => {
 export const setGroupList = async (value: string[]) => {
   return setSetValue(WECHAT_ROBOT_GROUP_LIST_KEY, value)
 }
+export const removeGroupByName = async (value: string[]) => {
+  return removeSetValue(WECHAT_ROBOT_GROUP_LIST_KEY, value)
+}
 
 /**
  * getIsGroupExclude value: 1 or 0
@@ -70,12 +73,6 @@ export const setGroupExcludeStatus = async (value: '1' | '0') => {
   return setStringValue(WECHAT_ROBOT_EXCLUDE_GROUP_KEY, value)
 }
 
-export const checkRobotRunConfig = async () => {
-  const robotAdmin = await getRobotAdmin()
-  const groupList = await getGroupList()
-  const groupExcludeStatus = await getGroupExcludeStatus()
-}
-
 export const getSetValue = async (key: string): Promise<string[]> => {
   return new Promise((resolve, reject) => {
     client.smembers(key, (err: any, res: any) => {
@@ -87,6 +84,15 @@ export const getSetValue = async (key: string): Promise<string[]> => {
 export const setSetValue = async (key: string, value: string[]): Promise<boolean> => {
   return new Promise((resolve, reject) => {
     client.sadd(key, value, (err: any, res: any) => {
+      if (err !== null) reject(err)
+      resolve(true)
+    })
+  })
+}
+
+export const removeSetValue = async (key: string, value: string[]): Promise<boolean> => {
+  return new Promise((resolve, reject) => {
+    client.srem(key, value, (err: any, res: any) => {
       if (err !== null) reject(err)
       resolve(true)
     })

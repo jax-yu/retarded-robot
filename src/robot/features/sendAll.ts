@@ -21,7 +21,7 @@ export const sendAllByGroup = async (msg: string, message: Message) => {
   try {
     await setStringValue(SEND_MSG_KEY, msg.substring(2, msg.length))
     const intervalTime = await getStringValue(SEND_INTERVAL_TIME)
-    await message.say(`已存储, 此次已发送, ${intervalTime}秒后自动发送`)
+    await message.say(`已存储, 此次已发送, ${Number(intervalTime) / 1000}秒后自动发送`)
     await handleSend()
   } catch (e) {
     await message.say('群发存储失败，请联系开发人员！')

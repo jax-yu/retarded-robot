@@ -5,7 +5,7 @@ import { clearNextHandleSend, queryIntervalTime, sendAllByGroup, setIntervalTime
 import { privateMenu, roomMenu } from './features/featureMenu'
 import {
   getGroupExcludeStatus,
-  getGroupList,
+  getGroupList, removeGroupByName,
   setGroupExcludeStatus,
   setGroupList,
   setRobotAdmin
@@ -47,6 +47,17 @@ const dispatchFriend = async (content: string, message: Message) => {
         await message.say(`${await roomInfo?.topic()}特殊群设置成功！`)
       } else {
         await message.say('特殊群设置失败，请联系开发人员！')
+      }
+      return
+    }
+    if (content.substr(0, 5) === '移除特殊群') {
+      const roomName = content.substring(5, content.length)
+      const roomInfo = await robot.Room.find({ topic: roomName })
+      if (roomInfo !== null) {
+        await removeGroupByName([roomInfo?.id as string])
+        await message.say(`${await roomInfo?.topic()}特殊群移除成功！`)
+      } else {
+        await message.say('特殊群移除失败，请联系开发人员！')
       }
       return
     }
