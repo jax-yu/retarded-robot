@@ -7,7 +7,7 @@ import { sendAdmin } from './features/sendAll'
 // import { sendEmailInfoToAdmin } from './features/sendAll'
 
 export async function onLogin (user: ContactSelf) {
-  db.open()
+  db.createMysqlPool()
   const admin = await getRobotAdmin()
   await sendAdmin(`登录成功${user.name()}`, admin[0])
   console.log(`登录成功${user.name()}`)
@@ -22,5 +22,4 @@ export async function onLogin (user: ContactSelf) {
 }
 
 export function onLogout () {
-  db.close()
 }

@@ -1,7 +1,7 @@
 import dbConfig from '../../config/db'
 const mysql = require('mysql')
 
-export let connection: any
+let pool: any
 
 interface JobInfoType {
   id: string;
@@ -13,15 +13,8 @@ interface JobInfoType {
 }
 
 export const db = {
-  open () {
-    connection = mysql.createConnection(dbConfig)
-    connection.connect((err: any) => {
-      if (err) {
-        console.log('sql connection failure')
-      } else {
-        console.log('sql connection successful')
-      }
-    })
+  createMysqlPool () {
+    pool = mysql.createPool(dbConfig)
   },
   async queryJobByCity (city: string): Promise<JobInfoType[]> {
     const sql = `SELECT * FROM job_info WHERE city = '${city}'`
@@ -29,17 +22,19 @@ export const db = {
   },
   async sqlQuery<T> (...sql: string[]): Promise<T> {
     return new Promise((resolve, reject) => {
-      connection.query(...sql, (err: any, result: any) => {
+      pool.getConnection((err: any, connection: any) => {
         if (err) {
           reject(new Error(err))
+        } else {
+          connection.query(...sql, (sqlErr: any, result: any) => {
+            if (sqlErr) {
+              reject(new Error(sqlErr))
+            }
+            resolve(result)
+            connection.release()
+          })
         }
-        resolve(result)
       })
     })
-  },
-  close () {
-    if (connection !== null) {
-      connection.end()
-    }
   }
 }
