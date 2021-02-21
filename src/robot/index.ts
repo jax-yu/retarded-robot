@@ -1,17 +1,16 @@
 import { Wechaty } from 'wechaty'
-import { PuppetPadplus } from 'wechaty-puppet-padplus'
 import robotConfig from '../../config/robot'
 import onScan from './scan'
 import { onLogin, onLogout } from './loginStatus'
 import onMessage from './message'
 import onRoomInvite from './roomInvite'
 import { loadGroupList } from './features/sendAll'
+import { PuppetPadlocal } from 'wechaty-puppet-padlocal'
 
 export const robot = new Wechaty({
-  puppet: new PuppetPadplus({
+  puppet: new PuppetPadlocal({
     token: robotConfig.token
-  }),
-  name: robotConfig.name
+  })
 })
 
 robot

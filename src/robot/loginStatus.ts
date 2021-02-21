@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-import { ContactSelf } from 'wechaty/dist/src/user'
+import { ContactSelf } from 'wechaty/dist/src/user/contact-self'
 import { db } from '../db'
 import { getRobotAdmin } from '../utils/redisHelper'
 import { sendAdmin } from './features/sendAll'
