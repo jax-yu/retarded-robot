@@ -25,7 +25,7 @@ This is not a very smart wechat robot
 - [x] 工作信息查询
 - [x] 定时群发
 - [X] 58同城邮件解析(解析成功后，会通知到管理员)
-- [ ] 智能对话
+- [X] 智能对话
 - [ ] 颜值检测
 
 ## 安装
@@ -44,6 +44,7 @@ git clone https://github.com/xajeyu/retarded-robot.git
 * 所有涉及到配置的文本全在config文件夹中
 * 定时发送消息存储在redis中
 * 工作信息存在数据库中
+* [AI接口文档](https://api.xajeyu.com/doc/)
 ```shell script
 npm install or yarn
 npm start or yarn start

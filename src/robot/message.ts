@@ -10,6 +10,9 @@ import {
   setGroupList,
   setRobotAdmin
 } from '../utils/redisHelper'
+import {
+  smartChat
+} from '../service/api'
 import { robot } from './index'
 
 // 处理群消息艾特机器人时的功能
@@ -102,7 +105,12 @@ ${groupListMsg.join('\n')}`)
       await message.say(`当前间隔: ${time}秒`)
       return
     }
-    // await message.say(content)
+    const res = await smartChat({
+      userSayContent: content,
+      userId: message.from()?.id,
+      origin: robot.id
+    })
+    await message.say(res.data.answer)
   } catch (e) {
     await message.say(e.message)
   }
